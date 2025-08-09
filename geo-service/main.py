@@ -51,4 +51,3 @@ def gee_info():
         "error": "GEE not initialized",
     }
     return info
-
