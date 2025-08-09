@@ -1,0 +1,61 @@
+# See https://github.com/github/gitignore for templates
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json*
+yarn.lock*
+pnpm-lock.yaml*
+.coverage/
+.next/
+.nuxt/
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# TypeScript / JS build outputs
+build/
+dist/
+.out/
+.cache/
+.vite/
+.eslintcache
+
+# Python
+__pycache__/
+*.py[cod]
+*$$py.class
+.env
+.venv/
+venv/
+ENV/
+Pipfile.lock
+.poetry/
+.mypy_cache/
+.pytest_cache/
+.coverage*
+htmlcov/
+
+# Convex
+.convex/
+.convex-dev/
+convex/.config/
+
+# Vercel
+.vercel/
+
+# Google Cloud service account keys
+*.json
+!package.json
+!tsconfig.json
+!pyproject.toml
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
