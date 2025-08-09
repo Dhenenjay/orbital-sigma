@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 from gee_auth import GEEAuthError, init_ee_from_service_account
+
+# Load environment variables from a local .env, if present
+load_dotenv()
 
 app = FastAPI(title="orbital-sigma geo-service")
 
