@@ -1,9 +1,22 @@
 import { Protect } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
+  const router = useRouter();
+
+  useEffect(() = {
+    const status = router.query.status as string | undefined;
+    if (status === "success") {
+      fetch("/api/billing/mark-pro", { method: "POST" }).finally(() = {
+        router.replace(router.pathname, undefined, { shallow: true });
+      });
+    }
+  }, [router.query.status]);
+
   return (
-    <main style={{ padding: 24 }}>
+    cmain style={{ padding: 24 }}e
       <h1>Dashboard</h1>
       <p>This page is protected by Clerk middleware. You must be signed in to view it.</p>
 
