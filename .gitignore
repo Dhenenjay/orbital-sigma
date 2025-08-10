@@ -59,3 +59,8 @@ convex/.config/
 *.swp
 *.swo
 
+
+geo-service.venv/
+*.pyc
+__pycache__/
+.env

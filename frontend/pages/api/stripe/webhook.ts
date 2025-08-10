@@ -27,17 +27,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const buf = await buffer(req);
     event = stripe.webhooks.constructEvent(buf, sig, whSecret);
-  } catch (err: any) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Invalid webhook";
+    return res.status(400).send(`Webhook Error: ${message}`);
   }
 
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId = (session.metadata as any)?.userId as string | undefined;
+        const userId = session.metadata?.userId as string | undefined;
         const customerId = session.customer as string | null;
         // TODO: call your backend (Convex action) to set plan=pro for userId and store stripeCustomerId
+        console.log('Checkout completed for user:', userId, 'customer:', customerId);
         break;
       }
       case "customer.subscription.deleted":
@@ -49,7 +51,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         break;
     }
     res.json({ received: true });
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
+  } catch (e) {
+    const error = e instanceof Error ? e.message : "Webhook processing failed";
+    res.status(500).json({ error });
   }
 }

@@ -11,7 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       publicMetadata: { plan: "pro" },
     });
     return res.status(200).json({ ok: true });
-  } catch (e: any) {
-    return res.status(500).json({ error: e.message });
+  } catch (e) {
+    const error = e instanceof Error ? e.message : "Failed to mark user as Pro";
+    return res.status(500).json({ error });
   }
 }

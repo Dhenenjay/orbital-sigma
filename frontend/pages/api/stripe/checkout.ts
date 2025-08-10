@@ -26,7 +26,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       metadata: { userId },
     });
     return res.status(200).json({ url: session.url });
-  } catch (e: any) {
-    return res.status(500).json({ error: e.message });
+  } catch (e) {
+    const error = e instanceof Error ? e.message : "Failed to create checkout";
+    return res.status(500).json({ error });
   }
 }

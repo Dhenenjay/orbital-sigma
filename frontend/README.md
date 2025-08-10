@@ -1,36 +1,239 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orbital Sigma Frontend
 
-## Getting Started
+A Next.js-based satellite intelligence platform for market analysis and trading signals.
 
-First, run the development server:
+## Features
 
+- 🛰️ Real-time satellite data analysis
+- 📊 Market intelligence dashboard
+- 💹 Trading signal generation
+- 🔐 Secure authentication with Clerk
+- 💳 Stripe billing integration
+- 🗺️ Interactive maps with MapLibre GL
+
+## Tech Stack
+
+- **Framework**: Next.js 15.4.6
+- **UI**: React 19.1.0 with Tailwind CSS
+- **Authentication**: Clerk
+- **Payments**: Stripe
+- **Maps**: MapLibre GL
+- **Styling**: Tailwind CSS v4
+
+## Prerequisites
+
+- Node.js 20+ 
+- npm or yarn
+- Docker (for containerized deployment)
+
+## Quick Start
+
+### Local Development
+
+1. **Clone the repository**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url>
+cd frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install dependencies**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Set up environment variables**
+```bash
+cp .env.example .env.local
+# Edit .env.local with your actual API keys
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Run development server**
+```bash
+npm run dev
+```
 
-## Learn More
+The app will be available at http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+### Production Build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Build the application**
+```bash
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Start production server**
+```bash
+npm run start
+```
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create a `.env.local` file based on `.env.example`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+
+# Convex Backend (optional)
+NEXT_PUBLIC_CONVEX_URL=https://your-convex-instance.convex.cloud
+CONVEX_DEPLOY_KEY=your_convex_deploy_key
+
+# API Configuration
+NEXT_PUBLIC_API_BASE=https://your-domain.com/api
+
+# Stripe Billing
+STRIPE_SECRET_KEY=sk_test_your_stripe_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+STRIPE_PRO_PRICE_ID=price_your_price_id
+
+# Base URL
+NEXT_PUBLIC_BASE_URL=https://your-domain.com
+```
+
+## Deployment
+
+### Docker Deployment
+
+1. **Build Docker image**
+```bash
+docker build -t orbital-sigma-frontend .
+```
+
+2. **Run with Docker**
+```bash
+docker run -p 3000:3000 --env-file .env.local orbital-sigma-frontend
+```
+
+### Docker Compose
+
+1. **Start with docker-compose**
+```bash
+docker-compose up -d
+```
+
+2. **Stop the service**
+```bash
+docker-compose down
+```
+
+### Vercel Deployment
+
+1. **Install Vercel CLI**
+```bash
+npm i -g vercel
+```
+
+2. **Deploy**
+```bash
+vercel --prod
+```
+
+### Manual Deployment
+
+1. **Build the application**
+```bash
+npm run build
+```
+
+2. **Copy files to your server**
+   - `.next/` directory
+   - `public/` directory
+   - `package.json` and `package-lock.json`
+   - `next.config.js`
+
+3. **Install production dependencies**
+```bash
+npm ci --only=production
+```
+
+4. **Start with PM2 (recommended)**
+```bash
+npm install -g pm2
+pm2 start npm --name "orbital-sigma" -- start
+pm2 save
+pm2 startup
+```
+
+## Project Structure
+
+```
+frontend/
+├── pages/              # Next.js pages
+│   ├── api/           # API routes
+│   ├── index.tsx      # Landing page
+│   ├── dashboard.tsx  # Main dashboard
+│   └── ...
+├── components/        # React components
+├── public/           # Static assets
+├── styles/           # Global styles
+├── types/            # TypeScript definitions
+├── next.config.js    # Next.js configuration
+├── tailwind.config.js # Tailwind configuration
+└── package.json      # Dependencies
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run production` - Build and start production
+
+## API Routes
+
+- `/api/signals` - Trading signals endpoint
+- `/api/aois` - Areas of Interest data
+- `/api/instruments` - Trading instruments
+- `/api/billing/mark-pro` - Billing upgrade endpoint
+- `/api/stripe/*` - Stripe integration endpoints
+
+## Performance Optimizations
+
+- Static generation for public pages
+- Dynamic imports for heavy components
+- Image optimization with Next.js Image
+- API route caching
+- Tailwind CSS purging
+
+## Security
+
+- Environment variables for sensitive data
+- Clerk authentication on all protected routes
+- Stripe webhook signature verification
+- CORS configuration for API routes
+- Content Security Policy headers
+
+## Troubleshooting
+
+### Build Errors
+- Clear `.next` cache: `rm -rf .next`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
+
+### Environment Variables
+- Ensure all required variables are set in `.env.local`
+- Restart the server after changing environment variables
+
+### Production Issues
+- Check logs: `pm2 logs orbital-sigma`
+- Verify environment: `NODE_ENV=production`
+- Check port availability: `lsof -i :3000`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## License
+
+[Your License]
+
+## Support
+
+For support, email support@orbitalsigma.com or open an issue.

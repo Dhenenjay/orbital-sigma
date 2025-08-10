@@ -1,0 +1,422 @@
+import { useState } from "react";
+import { useAction } from "convex/react";
+import { api } from "../convex/_generated/api";
+
+interface TestResult {
+  query: string;
+  success: boolean;
+  parsed?: any;
+  apiParams?: any;
+  interpretation?: string;
+  queryString?: string;
+  error?: string;
+}
+
+export default function TestQueriesPage() {
+  const [customQuery, setCustomQuery] = useState("");
+  const [results, setResults] = useState<TestResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [currentTest, setCurrentTest] = useState("");
+  
+  const testQueryParsing = useAction(api.testQueryParsing.testQueryParsing);
+  const testComplexQuery = useAction(api.testQueryParsing.testComplexQuery);
+  const convertQueryToApiParams = useAction(api.queryToApiParams.convertQueryToApiParams);
+
+  // Pre-defined test queries
+  const testQueries = [
+    "Show me large changes in South American soy farms in the last month",
+    "Critical port disruptions in Asia today",
+    "Find high confidence mining anomalies in copper mines with magnitude above 0.8",
+    "Show energy sector anomalies in the Middle East from the past week",
+    "Recent oil refinery outages in Texas",
+    "Major shipping congestion at Singapore port yesterday",
+    "Small shifts in African gold mines over the past fortnight",
+    "Extreme weather impact on Brazilian coffee farms last week",
+    "Show all anomalies with confidence > 0.7 and magnitude > 0.6",
+    "Compare wheat production anomalies between Ukraine and Brazil last 3 months",
+  ];
+
+  const runTest = async (query: string) => {
+    setCurrentTest(query);
+    try {
+      const result = await convertQueryToApiParams({
+        query,
+        useAI: false,
+      });
+      
+      return {
+        query,
+        success: true,
+        parsed: result.parsed,
+        apiParams: result.params,
+        interpretation: result.interpretation,
+        queryString: result.queryString,
+      };
+    } catch (error) {
+      return {
+        query,
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to parse",
+      };
+    }
+  };
+
+  const runAllTests = async () => {
+    setLoading(true);
+    setResults([]);
+    const newResults: TestResult[] = [];
+    
+    for (const query of testQueries) {
+      const result = await runTest(query);
+      newResults.push(result);
+      setResults([...newResults]);
+      await new Promise(resolve => setTimeout(resolve, 200)); // Small delay for UI
+    }
+    
+    setLoading(false);
+    setCurrentTest("");
+  };
+
+  const runCustomTest = async () => {
+    if (!customQuery.trim()) return;
+    
+    setLoading(true);
+    const result = await runTest(customQuery);
+    setResults(prev => [result, ...prev]);
+    setLoading(false);
+    setCurrentTest("");
+  };
+
+  const runComplexTest = async () => {
+    setLoading(true);
+    try {
+      const result = await testComplexQuery({});
+      setResults([{
+        query: "Show me large changes in South American soy farms in the last month",
+        success: true,
+        apiParams: result.params,
+        interpretation: result.interpretation,
+        queryString: result.queryString,
+      }]);
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ padding: 24, maxWidth: 1400, margin: "0 auto" }}>
+      <h1>🧪 Query Parser Test Suite</h1>
+      <p style={{ color: "#6b7280", marginBottom: 24 }}>
+        Test natural language query parsing and verify API parameters
+      </p>
+
+      {/* Controls */}
+      <div style={{ 
+        display: "flex", 
+        gap: 12, 
+        marginBottom: 24, 
+        padding: 16, 
+        background: "#f9fafb", 
+        borderRadius: 8,
+        flexWrap: "wrap",
+      }}>
+        <button
+          onClick={runAllTests}
+          disabled={loading}
+          style={{
+            padding: "10px 20px",
+            background: loading ? "#9ca3af" : "#4f46e5",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: loading ? "not-allowed" : "pointer",
+            fontWeight: 500,
+          }}
+        >
+          {loading ? "Running..." : "Run All Tests"}
+        </button>
+        
+        <button
+          onClick={runComplexTest}
+          disabled={loading}
+          style={{
+            padding: "10px 20px",
+            background: loading ? "#9ca3af" : "#10b981",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: loading ? "not-allowed" : "pointer",
+            fontWeight: 500,
+          }}
+        >
+          Test Complex Query
+        </button>
+        
+        <button
+          onClick={() => setResults([])}
+          style={{
+            padding: "10px 20px",
+            background: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontWeight: 500,
+          }}
+        >
+          Clear Results
+        </button>
+      </div>
+
+      {/* Custom Query Input */}
+      <div style={{ 
+        marginBottom: 24, 
+        padding: 16, 
+        background: "#f3f4f6", 
+        borderRadius: 8 
+      }}>
+        <h3 style={{ marginTop: 0 }}>Test Custom Query</h3>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            type="text"
+            value={customQuery}
+            onChange={(e) => setCustomQuery(e.target.value)}
+            placeholder="Enter a natural language query..."
+            style={{
+              flex: 1,
+              padding: "10px 12px",
+              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              fontSize: 14,
+            }}
+            onKeyPress={(e) => e.key === "Enter" && runCustomTest()}
+          />
+          <button
+            onClick={runCustomTest}
+            disabled={loading || !customQuery.trim()}
+            style={{
+              padding: "10px 20px",
+              background: loading || !customQuery.trim() ? "#9ca3af" : "#8b5cf6",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              cursor: loading || !customQuery.trim() ? "not-allowed" : "pointer",
+              fontWeight: 500,
+            }}
+          >
+            Test Query
+          </button>
+        </div>
+      </div>
+
+      {/* Currently Testing */}
+      {currentTest && (
+        <div style={{ 
+          marginBottom: 16, 
+          padding: 12, 
+          background: "#fef3c7", 
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}>
+          <div style={{
+            width: 20,
+            height: 20,
+            border: "3px solid #f59e0b",
+            borderTop: "3px solid transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+          }} />
+          <span style={{ fontSize: 14 }}>
+            Testing: "{currentTest.substring(0, 60)}..."
+          </span>
+        </div>
+      )}
+
+      {/* Results */}
+      <div style={{ display: "grid", gap: 16 }}>
+        {results.map((result, index) => (
+          <div
+            key={index}
+            style={{
+              border: "1px solid #e5e7eb",
+              borderRadius: 8,
+              overflow: "hidden",
+              background: result.success ? "#f0fdf4" : "#fef2f2",
+            }}
+          >
+            {/* Query Header */}
+            <div style={{
+              padding: 12,
+              background: result.success ? "#22c55e" : "#ef4444",
+              color: "white",
+              fontWeight: 500,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}>
+              <span style={{ fontSize: 18 }}>
+                {result.success ? "✅" : "❌"}
+              </span>
+              <span style={{ flex: 1 }}>
+                {result.query}
+              </span>
+            </div>
+            
+            {/* Result Details */}
+            {result.success && (
+              <div style={{ padding: 16 }}>
+                {/* Interpretation */}
+                <div style={{ marginBottom: 12 }}>
+                  <strong>📝 Interpretation:</strong>
+                  <div style={{ 
+                    marginTop: 4, 
+                    padding: 8, 
+                    background: "white", 
+                    borderRadius: 4,
+                    fontSize: 14,
+                    color: "#4b5563",
+                  }}>
+                    {result.interpretation}
+                  </div>
+                </div>
+                
+                {/* Key Parameters */}
+                <div style={{ marginBottom: 12 }}>
+                  <strong>🎯 Key Parameters:</strong>
+                  <div style={{ 
+                    marginTop: 8, 
+                    display: "grid", 
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: 8,
+                  }}>
+                    {result.apiParams?.domains && (
+                      <div style={{ padding: 8, background: "white", borderRadius: 4 }}>
+                        <span style={{ fontSize: 12, color: "#6b7280" }}>Domains:</span>
+                        <div style={{ fontWeight: 500 }}>
+                          {result.apiParams.domains.join(", ") || "all"}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.apiParams?.start_date && (
+                      <div style={{ padding: 8, background: "white", borderRadius: 4 }}>
+                        <span style={{ fontSize: 12, color: "#6b7280" }}>Time Range:</span>
+                        <div style={{ fontWeight: 500, fontSize: 13 }}>
+                          {new Date(result.apiParams.start_date).toLocaleDateString()} - 
+                          {new Date(result.apiParams.end_date).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.apiParams?.magnitude_min !== undefined && (
+                      <div style={{ padding: 8, background: "white", borderRadius: 4 }}>
+                        <span style={{ fontSize: 12, color: "#6b7280" }}>Magnitude:</span>
+                        <div style={{ fontWeight: 500 }}>
+                          {result.apiParams.magnitude_min} - {result.apiParams.magnitude_max || 1.0}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.apiParams?.confidence_min !== undefined && (
+                      <div style={{ padding: 8, background: "white", borderRadius: 4 }}>
+                        <span style={{ fontSize: 12, color: "#6b7280" }}>Confidence:</span>
+                        <div style={{ fontWeight: 500 }}>
+                          {result.apiParams.confidence_min} - {result.apiParams.confidence_max || 1.0}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.apiParams?.countries && (
+                      <div style={{ padding: 8, background: "white", borderRadius: 4 }}>
+                        <span style={{ fontSize: 12, color: "#6b7280" }}>Countries:</span>
+                        <div style={{ fontWeight: 500, fontSize: 13 }}>
+                          {result.apiParams.countries.slice(0, 3).join(", ")}
+                          {result.apiParams.countries.length > 3 && "..."}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {result.apiParams?.severity && (
+                      <div style={{ padding: 8, background: "white", borderRadius: 4 }}>
+                        <span style={{ fontSize: 12, color: "#6b7280" }}>Severity:</span>
+                        <div style={{ fontWeight: 500 }}>
+                          {result.apiParams.severity}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Query String */}
+                <details style={{ marginTop: 12 }}>
+                  <summary style={{ cursor: "pointer", fontWeight: 500 }}>
+                    🔗 Query String
+                  </summary>
+                  <div style={{ 
+                    marginTop: 8, 
+                    padding: 8, 
+                    background: "white", 
+                    borderRadius: 4,
+                    fontSize: 12,
+                    fontFamily: "monospace",
+                    wordBreak: "break-all",
+                  }}>
+                    {result.queryString}
+                  </div>
+                </details>
+                
+                {/* Full Parameters */}
+                <details style={{ marginTop: 8 }}>
+                  <summary style={{ cursor: "pointer", fontWeight: 500 }}>
+                    📊 Full API Parameters
+                  </summary>
+                  <pre style={{ 
+                    marginTop: 8, 
+                    padding: 8, 
+                    background: "white", 
+                    borderRadius: 4,
+                    fontSize: 12,
+                    overflow: "auto",
+                  }}>
+                    {JSON.stringify(result.apiParams, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            )}
+            
+            {/* Error Message */}
+            {!result.success && result.error && (
+              <div style={{ padding: 16, color: "#dc2626" }}>
+                <strong>Error:</strong> {result.error}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {results.length === 0 && !loading && (
+        <div style={{ 
+          textAlign: "center", 
+          padding: 48, 
+          color: "#9ca3af",
+          background: "#f9fafb",
+          borderRadius: 8,
+        }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔬</div>
+          <p>No test results yet. Run tests to see how queries are parsed!</p>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
