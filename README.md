@@ -1,8 +1,15 @@
-# orbital-sigma
+# Orbital Sigma 🛰️
 
-A full‑stack geospatial app scaffold combining a modern web frontend, realtime backend, and a Python microservice for Earth Engine workflows.
+**Satellite-powered market intelligence platform** that detects anomalies in real-time and generates actionable trading signals.
 
-Project status: initial scaffolding is committed. You can run each service locally and iterate.
+## 🚀 Latest Updates (August 2025)
+
+✅ **Complete NRT (Near Real-Time) satellite anomaly detection platform**  
+✅ **Fixed Google Earth Engine integration with Sentinel-2 HARMONIZED dataset**  
+✅ **AlphaEarth embedding support with intelligent fallback**  
+✅ **Interactive map with auto-focus based on natural language queries**  
+✅ **Domain-specific anomaly scoring for ports, farms, mines, and energy**  
+✅ **Evidence panel with satellite imagery and market impact analysis**
 
 ## Stack
 
